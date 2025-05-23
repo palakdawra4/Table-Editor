@@ -1,18 +1,21 @@
-// import React from "react";
+import React from "react";
 import EditableTable from "./components/EditableTable";
 
-const App = () => {
+const App: React.FC = () => {
   const columns = [
     { key: "id", label: "ID" },
-    { key: "name", label: "Name", editable: true},
-    { key: "email", label: "Email", editable: true},
+    { key: "firstName", label: "First Name", editable: true },
+    { key: "lastName", label: "Last Name", editable: true },
+    { key: "maidenName", label: "Maiden Name", editable: true },
+    { key: "email", label: "Email", editable: true },
+    { key: "birthDate", label: "Birth Date", editable: true, type: "date" }
   ];
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Editable Table Example</h1>
+    <div>
+      <h2>User Table</h2>
       <EditableTable
-        endpoint="https://jsonplaceholder.typicode.com/users"
+        endpoint="https://dummyjson.com/users"
         columns={columns}
       />
     </div>

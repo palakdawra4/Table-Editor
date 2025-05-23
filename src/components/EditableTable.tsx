@@ -14,59 +14,56 @@ type EditableTableProps = {
 
 const EditableTable: React.FC<EditableTableProps> = ({ endpoint, columns }) => {
   const [data, setData] = useState<any[]>([]);
-  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [editRowId, setEditRowId] = useState<number | null>(null);
   const [editedRow, setEditedRow] = useState<any>({});
 
   useEffect(() => {
     fetch(endpoint)
       .then((res) => res.json())
-      .then((json) => setData(json))
-      .catch((err) => console.error("Fetch error:", err));
+      .then((data) => setData(data.users)) // Note: `users` is the key in the response
+      .catch((err) => console.error("Failed to fetch:", err));
   }, [endpoint]);
 
-  const handleEdit = (index: number) => {
-    setEditIndex(index);
-    setEditedRow({ ...data[index] });
+  const handleEditClick = (id: number) => {
+    setEditRowId(id);
+    const row = data.find((item) => item.id === id);
+    setEditedRow({ ...row });
   };
 
   const handleChange = (key: string, value: string) => {
     setEditedRow((prev: any) => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = () => {
-    if (editIndex === null) return;
-    const updated = [...data];
-    updated[editIndex] = editedRow;
-    setData(updated);
-    setEditIndex(null);
-  };
-
-  const formatDateForInput = (dateString: string) => {
-    // Ensure date string is in YYYY-MM-DD format for input[type=date]
-    const date = new Date(dateString);
-    return date.toISOString().split("T")[0];
+  const handleSaveClick = () => {
+    const updatedData = data.map((item) =>
+      item.id === editRowId ? editedRow : item
+    );
+    setData(updatedData);
+    setEditRowId(null);
   };
 
   return (
-    <table border={1} cellPadding={8} cellSpacing={0} style={{ width: "100%" }}>
+    <table style={{ borderCollapse: "collapse", width: "100%" }}>
       <thead>
         <tr>
           {columns.map((col) => (
-            <th key={col.key}>{col.label}</th>
+            <th key={col.key} style={{ border: "1px solid black", padding: "8px" }}>
+              {col.label}
+            </th>
           ))}
-          <th>Actions</th>
+          <th style={{ border: "1px solid black", padding: "8px" }}>Actions</th>
         </tr>
       </thead>
       <tbody>
-        {data.map((row, idx) => (
-          <tr key={idx}>
+        {data.map((row) => (
+          <tr key={row.id}>
             {columns.map((col) => (
-              <td key={col.key}>
-                {editIndex === idx && col.editable ? (
+              <td key={col.key} style={{ border: "1px solid black", padding: "8px" }}>
+                {editRowId === row.id && col.editable ? (
                   col.type === "date" ? (
                     <input
                       type="date"
-                      value={formatDateForInput(editedRow[col.key] || "")}
+                      value={editedRow[col.key]?.slice(0, 10) || ""}
                       onChange={(e) => handleChange(col.key, e.target.value)}
                     />
                   ) : (
@@ -83,11 +80,11 @@ const EditableTable: React.FC<EditableTableProps> = ({ endpoint, columns }) => {
                 )}
               </td>
             ))}
-            <td>
-              {editIndex === idx ? (
-                <button onClick={handleSave}>Save</button>
+            <td style={{ border: "1px solid black", padding: "8px" }}>
+              {editRowId === row.id ? (
+                <button onClick={handleSaveClick}>Save</button>
               ) : (
-                <button onClick={() => handleEdit(idx)}>Edit</button>
+                <button onClick={() => handleEditClick(row.id)}>Edit</button>
               )}
             </td>
           </tr>
